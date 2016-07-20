@@ -10,7 +10,14 @@ def run():
     print(len(vs["Versions"]))
 
     for v in vs["Versions"]:
-        print(v["FunctionArn"])
+        
+        fn = v["FunctionArn"]
+        print(fn)
+
+        f = l.get_function(
+                FunctionName=fn)
+
+        print(f["Code"]["Location"])
 
 
 
