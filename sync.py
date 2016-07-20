@@ -12,7 +12,11 @@ def run():
     for v in vs["Versions"]:
         
         fn = v["FunctionArn"]
+
         print(fn)
+
+        print(v["Version"])
+        print(v["Description"])
 
         f = l.get_function(
                 FunctionName=fn)
