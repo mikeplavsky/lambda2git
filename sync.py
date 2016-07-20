@@ -1,4 +1,6 @@
 import boto3
+import urllib2
+import zlib
 
 def run():
 
@@ -21,7 +23,16 @@ def run():
         f = l.get_function(
                 FunctionName=fn)
 
-        print(f["Code"]["Location"])
+        loc = f["Code"]["Location"]
+        print(loc)
+        
+        code = urllib2.urlopen(loc)
+        zip_code = code.read()
+
+        res = zlib.decompress(zip_code)
+
+
+
 
 
 
