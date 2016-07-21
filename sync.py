@@ -1,6 +1,7 @@
 import boto3
 import urllib2
-import zlib
+import zipfile
+from tempfile import NamedTemporaryFile
 
 def run():
 
@@ -29,7 +30,23 @@ def run():
         code = urllib2.urlopen(loc)
         zip_code = code.read()
 
-        res = zlib.decompress(zip_code)
+        tf = NamedTemporaryFile()
+
+        tf.write(zip_code)
+        tf.flush()
+
+        import zipfile
+
+        z = zipfile.ZipFile(tf.name, 'r', zipfile.ZIP_STORED)
+        z.extractall(path=tf.name + ".zip")
+
+        tf.close()
+
+        ns = z.namelist()
+
+        zf = open(tf.name + ".zip/" + ns[0])
+        print(zf.read())
+
 
 
 
