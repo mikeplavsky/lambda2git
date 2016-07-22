@@ -3,7 +3,24 @@ import urllib2
 import zipfile
 from tempfile import NamedTemporaryFile
 
+import os
+
+git_key = os.environ.get("GIT_KEY")
+git_url = "https://api.github.com/repos/GitQuest/aws-police/contents/README.md"
+
 l = boto3.client("lambda")
+
+def create_file():
+
+    import urllib2
+    
+    opener = urllib2.build_opener(urllib2.HTTPHandler)
+    
+    req = urllib2.Request(git_url,data="")
+    req.get_method = lambda: "PUT"
+
+    url = opener.open(req)
+
 
 def get_function(fn):
 
