@@ -4,6 +4,8 @@ import zipfile
 from tempfile import NamedTemporaryFile
 
 import os
+import requests
+import base64
 
 git_user = os.environ.get("GIT_USER")
 git_key = os.environ.get("GIT_KEY")
@@ -13,21 +15,29 @@ git_url = "https://api.github.com/repos/%s/contents/%s"
 
 l = boto3.client("lambda")
 
-def create_file():
+def get_file(path):
 
-    text = "it is cool!"
-    import base64
-    
-    import requests
+    res = requests.get(
+            
+            git_url % (git_repo,path),
+            auth=(git_user,git_key))
+
+    return res
+
+
+def create_file(
+        path,
+        message,
+        text):
 
     res = requests.put(
             
-            git_url % (git_repo, "README1.md"),
+            git_url % (git_repo,path),
             auth=(git_user,git_key),
 
             json=dict(
-                message="checking...",
-                sha = "419861053327af2a12d5c8769153a4571da2f96b",
+                message=message,
+                sha = "e30eaeba4c5f728122df548f34c1d9e258a9ae5e",
                 content=base64.b64encode(text)))
 
     return res
@@ -59,8 +69,10 @@ def get_function(fn):
 
     ns = z.namelist()
 
-    zf = open(tf.name + ".zip/" + ns[0])
-    print(zf.read())
+    zf = open(
+            tf.name + ".zip/" + ns[0])
+
+    return zf.read()
 
 
 def run():
@@ -71,6 +83,8 @@ def run():
     print(len(vs["Versions"]))
 
     for v in vs["Versions"]:
+
+        print(v)
         
         fn = v["FunctionArn"]
 
@@ -79,7 +93,21 @@ def run():
         print(v["Version"])
         print(v["Description"])
 
-        get_function(fn)
+        text = get_function(fn)
+
+        import hashlib
+        r = hashlib.sha1()
+
+        r.update(text)
+        print(r.hexdigest())
+
+        return text
+
+        msg = v["Description"]
+        name = v["FunctionName"] + ".py"
+
+        res = create_file(name, msg, text )
+        return res
 
 
 
