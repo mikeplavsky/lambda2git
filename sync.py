@@ -1,3 +1,6 @@
+import sys
+sys.path.append("packages")
+
 import boto3
 import urllib2
 import zipfile

@@ -1,3 +1,7 @@
+.DS_Store
+packages/
+
+*.zip
 .env
 *.pyc
 *.swp
