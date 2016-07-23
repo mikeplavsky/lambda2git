@@ -11,28 +11,21 @@ git_user = os.environ.get("GIT_USER")
 git_key = os.environ.get("GIT_KEY")
 git_repo = os.environ.get("GIT_REPO")
 
-git_url = "https://api.github.com/repos/%s/%s"
+git_url = "https://api.github.com/repos/%s/%s?path=%s"
 
 l = boto3.client("lambda")
 
-def get_commits(path):
+def get_command(command, path):
 
     res = requests.get(
             
-            git_url % (git_repo,"commits") + "?path=%s" % path,
+            git_url % (git_repo,command,path),
             auth=(git_user,git_key))
 
     return res
 
-def get_file(path):
-
-    res = requests.get(
-            
-            git_url % (git_repo,"contents") + "/" + path,
-            auth=(git_user,git_key))
-
-    return res
-
+get_commits = lambda path: get_command("commits", path)
+get_file = lambda path: get_command("contents", path)
 
 def create_file(
         path,
