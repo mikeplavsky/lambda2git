@@ -5,21 +5,22 @@ from tempfile import NamedTemporaryFile
 
 import os
 
+git_user = os.environ.get("GIT_USER")
 git_key = os.environ.get("GIT_KEY")
+
 git_url = "https://api.github.com/repos/GitQuest/aws-police/contents/README.md"
 
 l = boto3.client("lambda")
 
 def create_file():
-
-    import urllib2
     
-    opener = urllib2.build_opener(urllib2.HTTPHandler)
-    
-    req = urllib2.Request(git_url,data="")
-    req.get_method = lambda: "PUT"
+    import requests
+    res = requests.get(
+            git_url,
+            auth=(git_user,git_key))
 
-    url = opener.open(req)
+    return res
+
 
 
 def get_function(fn):

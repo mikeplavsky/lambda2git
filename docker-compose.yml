@@ -6,3 +6,6 @@ services:
         volumes:
             - .:/lambda2git/
             - ~/.aws/config:/root/.aws/config  
+        environment:
+            - GIT_USER
+            - GIT_KEY
