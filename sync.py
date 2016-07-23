@@ -11,6 +11,8 @@ git_user = os.environ.get("GIT_USER")
 git_key = os.environ.get("GIT_KEY")
 git_repo = os.environ.get("GIT_REPO")
 
+aws_lambda = os.environ.get("AWS_LAMBDA")
+
 git_url = "https://api.github.com/repos/%s/%s?path=%s"
 git_contents = "https://api.github.com/repos/%s/contents/%s"
 
@@ -26,23 +28,38 @@ def get_command(command, path):
     return res
 
 get_commits = lambda path: get_command("commits", path)
-get_file = lambda path: get_command("contents", path)
 
-def reate_file(
+def get_file(path): 
+
+    res = requests.get(
+            
+            git_contents % (git_repo,path),
+            auth=(git_user,git_key))
+
+    return res
+
+def create_file(
         path,
         message,
         text,
-        sha=""):
+        sha=None):
+    
+
+    json = dict(
+        message=message,
+        sha = sha,
+        content=base64.b64encode(text))
+
+    if not sha: 
+        del json['sha']
+
+    print(json)
 
     res = requests.put(
             
             git_contents % (git_repo,path),
             auth=(git_user,git_key),
-
-            json=dict(
-                message=message,
-                sha = sha,
-                content=base64.b64encode(text)))
+            json=json)
 
     return res
 
@@ -80,23 +97,61 @@ def get_function(fn):
 
 def run():
 
+    name = aws_lambda + ".py"
+    commits = get_commits(name).json()
+
+    sha = None
+    start = True
+    commit_msg = None
+
+    if len(commits):
+
+        f = get_file(name).json()
+
+        start = False
+        sha = f["sha"]
+        commit_msg = commits[0]["commit"]["message"]
+
+        print("looking for")
+        print(commit_msg)
+
+        print("sha in github")
+        print(sha)
+    
     vs = l.list_versions_by_function(
-            FunctionName="aws-cleaner-sg")
+            FunctionName=aws_lambda)
 
     for v in vs["Versions"]:
 
-        fn = v["FunctionArn"]
-        print(v)
+        if v["Version"] == "$LATEST":
 
-        text = get_function(fn)
+            print("skipping $LATEST")
+            continue
 
         msg = v["Description"] 
         msg = msg + "\n" + v["CodeSha256"] 
 
-        name = v["FunctionName"] + ".py"
+        print(msg)
+        
+        if start:
+            
+            fn = v["FunctionArn"]
+            text = get_function(fn)
 
-        res = create_file(name, msg, text )
-        return res
+            res = create_file(
+                    name, msg, text, sha).json()
+
+            print(res)
+
+            sha = res["content"]["sha"]
+
+        if len(commits) and commit_msg == msg:
+
+            print("found last commit")
+            start = True
+
+
+
 
 
 

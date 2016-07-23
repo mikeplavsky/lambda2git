@@ -10,3 +10,4 @@ services:
             - GIT_USER
             - GIT_KEY
             - GIT_REPO
+            - AWS_LAMBDA
