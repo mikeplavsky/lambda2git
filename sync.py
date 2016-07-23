@@ -99,7 +99,18 @@ def run():
 
 def sync(aws_lambda):
 
-    name = aws_lambda + ".py"
+    la = l.get_function(
+            FunctionName=aws_lambda)
+
+    runtime = la["Configuration"]["Runtime"]
+    ext = ""
+
+    if "python" in runtime:
+        ext = ".py"
+    elif "nodejs" in runtime:
+        ext = ".js"
+
+    name = aws_lambda + ext
     commits = get_commits(name).json()
 
     sha = None
