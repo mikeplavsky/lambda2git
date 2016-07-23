@@ -1,5 +1,5 @@
 # lambda2git
-Syncing up lambda to git
+Syncing Aws Lambda versions to github
 
 Assumptions (which maybe wrong):
 
@@ -8,4 +8,4 @@ Assumptions (which maybe wrong):
 
 Warning:
 
-$LATEST version is not synced 
+$LATEST version is not synced, you need explicitly publish Aws Lambda version 
