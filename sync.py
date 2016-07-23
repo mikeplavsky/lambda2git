@@ -11,7 +11,6 @@ git_user = os.environ.get("GIT_USER")
 git_key = os.environ.get("GIT_KEY")
 git_repo = os.environ.get("GIT_REPO")
 
-aws_lambda = os.environ.get("AWS_LAMBDA")
 
 git_url = "https://api.github.com/repos/%s/%s?path=%s"
 git_contents = "https://api.github.com/repos/%s/contents/%s"
@@ -53,8 +52,6 @@ def create_file(
     if not sha: 
         del json['sha']
 
-    print(json)
-
     res = requests.put(
             
             git_contents % (git_repo,path),
@@ -94,8 +91,13 @@ def get_function(fn):
 
     return zf.read()
 
-
 def run():
+
+    aws_lambda = os.environ.get("AWS_LAMBDA")
+    sync(aws_lambda)
+
+
+def sync(aws_lambda):
 
     name = aws_lambda + ".py"
     commits = get_commits(name).json()
@@ -140,8 +142,6 @@ def run():
 
             res = create_file(
                     name, msg, text, sha).json()
-
-            print(res)
 
             sha = res["content"]["sha"]
 
