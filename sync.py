@@ -11,15 +11,24 @@ git_user = os.environ.get("GIT_USER")
 git_key = os.environ.get("GIT_KEY")
 git_repo = os.environ.get("GIT_REPO")
 
-git_url = "https://api.github.com/repos/%s/contents/%s"
+git_url = "https://api.github.com/repos/%s/%s"
 
 l = boto3.client("lambda")
+
+def get_commits(path):
+
+    res = requests.get(
+            
+            git_url % (git_repo,"commits") + "?path=%s" % path,
+            auth=(git_user,git_key))
+
+    return res
 
 def get_file(path):
 
     res = requests.get(
             
-            git_url % (git_repo,path),
+            git_url % (git_repo,"contents") + "/" + path,
             auth=(git_user,git_key))
 
     return res
@@ -50,7 +59,6 @@ def get_function(fn):
             FunctionName=fn)
 
     loc = f["Code"]["Location"]
-    print(loc)
     
     code = urllib2.urlopen(loc)
     zip_code = code.read()
@@ -80,30 +88,14 @@ def run():
     vs = l.list_versions_by_function(
             FunctionName="aws-cleaner-sg")
 
-    print(len(vs["Versions"]))
-
     for v in vs["Versions"]:
 
-        print(v)
-        
         fn = v["FunctionArn"]
-
-        print(fn)
-
-        print(v["Version"])
-        print(v["Description"])
+        print(v)
 
         text = get_function(fn)
 
-        import hashlib
-        r = hashlib.sha1()
-
-        r.update(text)
-        print(r.hexdigest())
-
-        return text
-
-        msg = v["Description"]
+        msg = v["Description"] + " " + v["Version"] 
         name = v["FunctionName"] + ".py"
 
         res = create_file(name, msg, text )
