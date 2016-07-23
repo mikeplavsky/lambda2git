@@ -76,8 +76,6 @@ def create_file(
     res.raise_for_status()
     return res
 
-
-
 def get_function(fn):
 
     f = l.get_function(
