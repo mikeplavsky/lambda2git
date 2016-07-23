@@ -1,5 +1,5 @@
 # lambda2git
-Backing up lambda to git
+Syncing up lambda to git
 
 Assumptions (which maybe wrong):
 
