@@ -30,7 +30,7 @@ exports.handler = (event, context, callback) => {
     var msg = {
         GIT_USER: "<your name>",
         GIT_KEY : "<your key>",
-        GIT_REPO: "GitQuest/aws-police"
+        GIT_REPO: "<your repo>"
     }
     
     let funcs = [

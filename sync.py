@@ -57,7 +57,6 @@ def create_file(
         message,
         text,
         sha=None):
-    
 
     json = dict(
         message=message,
