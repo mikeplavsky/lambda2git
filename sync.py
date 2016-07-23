@@ -12,6 +12,7 @@ git_key = os.environ.get("GIT_KEY")
 git_repo = os.environ.get("GIT_REPO")
 
 git_url = "https://api.github.com/repos/%s/%s?path=%s"
+git_contents = "https://api.github.com/repos/%s/contents/%s"
 
 l = boto3.client("lambda")
 
@@ -27,19 +28,20 @@ def get_command(command, path):
 get_commits = lambda path: get_command("commits", path)
 get_file = lambda path: get_command("contents", path)
 
-def create_file(
+def reate_file(
         path,
         message,
-        text):
+        text,
+        sha=""):
 
     res = requests.put(
             
-            git_url % (git_repo,path),
+            git_contents % (git_repo,path),
             auth=(git_user,git_key),
 
             json=dict(
                 message=message,
-                sha = "e30eaeba4c5f728122df548f34c1d9e258a9ae5e",
+                sha = sha,
                 content=base64.b64encode(text)))
 
     return res
@@ -88,7 +90,9 @@ def run():
 
         text = get_function(fn)
 
-        msg = v["Description"] + " " + v["Version"] 
+        msg = v["Description"] 
+        msg = msg + "\n" + v["CodeSha256"] 
+
         name = v["FunctionName"] + ".py"
 
         res = create_file(name, msg, text )
