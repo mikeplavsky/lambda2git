@@ -7,15 +7,25 @@ import os
 import requests
 import base64
 
-git_user = os.environ.get("GIT_USER")
-git_key = os.environ.get("GIT_KEY")
-git_repo = os.environ.get("GIT_REPO")
-
+git_user = None 
+git_key = None
+git_repo = None
 
 git_url = "https://api.github.com/repos/%s/%s?path=%s"
 git_contents = "https://api.github.com/repos/%s/contents/%s"
 
 l = boto3.client("lambda")
+
+def lambda_handler(event, context):
+
+    global git_user, git_key, git_repo
+
+    git_user = event["GIT_USER"]
+    git_key = event["GIT_KEY"]
+    git_repo = event["GIT_REPO"]
+
+    aws_lambda = event["AWS_LAMBDA"]
+    sync(aws_lambda)
 
 def get_command(command, path):
 
@@ -24,6 +34,7 @@ def get_command(command, path):
             git_url % (git_repo,command,path),
             auth=(git_user,git_key))
 
+    res.raise_for_status()
     return res
 
 get_commits = lambda path: get_command("commits", path)
@@ -35,6 +46,7 @@ def get_file(path):
             git_contents % (git_repo,path),
             auth=(git_user,git_key))
 
+    res.raise_for_status()
     return res
 
 def create_file(
@@ -58,6 +70,7 @@ def create_file(
             auth=(git_user,git_key),
             json=json)
 
+    res.raise_for_status()
     return res
 
 
@@ -91,11 +104,15 @@ def get_function(fn):
 
     return zf.read()
 
-def run():
+def run(aws_lambda):
 
-    aws_lambda = os.environ.get("AWS_LAMBDA")
+    global git_user, git_key, git_repo
+
+    git_user = os.environ["GIT_USER"]
+    git_key = os.environ["GIT_KEY"]
+    git_repo = os.environ["GIT_REPO"]
+
     sync(aws_lambda)
-
 
 def sync(aws_lambda):
 
@@ -111,6 +128,8 @@ def sync(aws_lambda):
         ext = ".js"
 
     name = aws_lambda + ext
+    print("Syncing " + name)
+
     commits = get_commits(name).json()
 
     sha = None
@@ -120,8 +139,8 @@ def sync(aws_lambda):
     if len(commits):
 
         f = get_file(name).json()
-
         start = False
+
         sha = f["sha"]
         commit_msg = commits[0]["commit"]["message"]
 
