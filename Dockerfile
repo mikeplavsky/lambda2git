@@ -1,10 +1,10 @@
-FROM python:2.7
+FROM ipython/scipyserver 
 
 RUN apt-get update
 RUN apt-get install -y --fix-missing zip
 
-RUN pip install boto3
-RUN pip install requests
+RUN pip2.7 install boto3
+RUN pip2.7 install requests
 
 
 WORKDIR /lambda2git

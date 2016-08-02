@@ -4,10 +4,12 @@ services:
     lambda2git:
         build: "."
         volumes:
-            - .:/lambda2git/
+            - .:/lambda2git
             - ~/.aws/config:/root/.aws/config  
         environment:
             - GIT_USER
             - GIT_KEY
             - GIT_REPO
             - AWS_LAMBDA
+        ports:
+            - 8888:8888
