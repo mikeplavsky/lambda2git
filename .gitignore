@@ -6,3 +6,4 @@ packages/
 .env
 *.pyc
 *.swp
+*.ipydb
