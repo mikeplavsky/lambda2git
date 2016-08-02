@@ -102,7 +102,7 @@ def get_function(fn):
     zf = open(
             tf.name + ".zip/" + ns[0])
 
-    return zf.read()
+    return (zf.read(),f)
 
 def run(aws_lambda):
 
@@ -168,7 +168,7 @@ def sync(aws_lambda):
         if start:
             
             fn = v["FunctionArn"]
-            text = get_function(fn)
+            text,_ = get_function(fn)
 
             res = create_file(
                     name, msg, text, sha).json()
