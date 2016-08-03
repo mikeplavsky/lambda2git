@@ -6,4 +6,4 @@ packages/
 .env
 *.pyc
 *.swp
-*.ipydb
+*.ipynb

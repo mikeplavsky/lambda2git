@@ -2,17 +2,17 @@ cf = dict(
     AWSTemplateFormatVersion = "2010-09-09",
     Resources = {})
 
-def generate(funcs):
+def generate(funcs, prefix=""):
 
     from sync import get_function
     import json
 
-    for f in funcs:
+    for i,f in enumerate(funcs):
 
         code,func = get_function(f)
         func = func["Configuration"]
 
-        res = {f:dict(
+        res = {"func%s"%i:dict(
 
             Type = "AWS::Lambda::Function",
 
@@ -20,10 +20,11 @@ def generate(funcs):
 
                 Code = dict(ZipFile=code),
 
-                Handler=func["Handler"],
+                Handler="index." + func["Handler"].split(".")[1],
+
                 Runtime=func["Runtime"],
                 Description=func["Description"],
-                FunctionName=func["FunctionName"],
+                FunctionName=func["FunctionName"] + prefix,
                 MemorySize=func["MemorySize"],
                 Role=func["Role"],
                 Timeout=func["Timeout"]
@@ -32,4 +33,4 @@ def generate(funcs):
 
         cf["Resources"].update(res)
 
-    return cf
+    return json.dumps(cf,indent=4,sort_keys=True)
