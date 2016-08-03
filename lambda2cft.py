@@ -1,6 +1,29 @@
 cf = dict(
     AWSTemplateFormatVersion = "2010-09-09",
-    Resources = {})
+    Resources = dict())
+
+LambdasRole = dict(
+    
+    Type = "AWS::IAM::Role",
+
+    Properties = dict(
+        ManagedPolicyArns = [
+            'arn:aws:iam::aws:policy/AWSLambdaFullAccess'],
+        AssumeRolePolicyDocument=dict(
+            Version = '2012-10-17',
+            Statement=[
+                dict(
+
+                    Action="sts:AssumeRole",
+                    Effect="Allow",
+                    Principal = dict(
+                        Service = 'lambda.amazonaws.com'),
+                    Sid=''
+
+                    )])))
+
+cf["Resources"].update(
+        dict(LambdasRole=LambdasRole))
 
 def generate(funcs, prefix=""):
 
@@ -26,7 +49,7 @@ def generate(funcs, prefix=""):
                 Description=func["Description"],
                 FunctionName=func["FunctionName"] + prefix,
                 MemorySize=func["MemorySize"],
-                Role=func["Role"],
+                Role=dict(Ref="LambdasRole"),
                 Timeout=func["Timeout"]
 
             ))}
