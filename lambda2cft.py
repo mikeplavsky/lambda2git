@@ -49,7 +49,9 @@ def generate(funcs, prefix=""):
                 Description=func["Description"],
                 FunctionName=func["FunctionName"] + prefix,
                 MemorySize=func["MemorySize"],
-                Role=dict(Ref="LambdasRole"),
+                Role={"Fn::GetAtt": [
+                        "LambdasRole", 
+                        "Arn"]},
                 Timeout=func["Timeout"]
 
             ))}
