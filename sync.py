@@ -114,18 +114,45 @@ def run(aws_lambda):
 
     sync(aws_lambda)
 
-def sync(aws_lambda):
+def get_ext(runtime):
 
-    la = l.get_function(
-            FunctionName=aws_lambda)
-
-    runtime = la["Configuration"]["Runtime"]
     ext = ""
 
     if "python" in runtime:
         ext = ".py"
     elif "nodejs" in runtime:
         ext = ".js"
+
+    return ext
+
+def get_versions(vs):
+
+    vers = vs[1:]
+    
+    if len(vers): 
+        
+        if vs[0]["CodeSha256"] != vs[-1]["CodeSha256"]:  
+
+            print("$LATEST was not published.")
+            vers.append(vs[0])
+
+        else:
+            print("$LATEST was published.")
+
+    if not len(vers):
+
+        print("Nothing was published.")
+        vers.append(vs[0])
+
+    return vers
+
+def sync(aws_lambda):
+
+    la = l.get_function(
+            FunctionName=aws_lambda)
+
+    ext = get_ext(
+            la["Configuration"]["Runtime"])
 
     name = aws_lambda + ext
     print("Syncing " + name)
@@ -162,23 +189,7 @@ def sync(aws_lambda):
     vs = l.list_versions_by_function(
             FunctionName=aws_lambda)["Versions"]
 
-    vers = vs[1:]
-    
-    if len(vers): 
-        
-        if vs[0]["CodeSha256"] != vs[-1]["CodeSha256"]:  
-
-            print("$LATEST was not published.")
-            vers.append(vs[0])
-
-        else:
-            print("$LATEST was published.")
-
-    if not len(vers):
-
-        print("Nothing was published.")
-        vers.append(vs[0])
-
+    vers = get_versions(vs)
     started_sync = False
 
     for v in vers:
