@@ -131,18 +131,27 @@ def sync(aws_lambda):
     print("Syncing " + name)
 
     commits = get_commits(name).json()
+    print("Commits: %s" % len(commits))
 
     sha = None
     start = True
     commit_msg = None
 
-    if len(commits):
+    f = None
 
+    try:
         f = get_file(name).json()
+    except Exception as ex:
+        print(ex)
+
+    if len(commits) and f: 
+
         start = False
 
         sha = f["sha"]
         commit_msg = commits[0]["commit"]["message"]
+        
+        commit_msg = commit_msg.split("\n")[1]
 
         print("looking for")
         print(commit_msg)
@@ -155,22 +164,24 @@ def sync(aws_lambda):
 
     vers = vs[1:]
     
-    if len(vers) and vs[0]["CodeSha256"] != vs[-1]["CodeSha256"]:  
+    if len(vers): 
+        
+        if vs[0]["CodeSha256"] != vs[-1]["CodeSha256"]:  
 
-        print("$LATEST was not published.")
-        vers.append(vs[0])
+            print("$LATEST was not published.")
+            vers.append(vs[0])
+
+        else:
+            print("$LATEST was published.")
 
     if not len(vers):
 
         print("Nothing was published.")
         vers.append(vs[0])
 
+    started_sync = False
+
     for v in vers:
-
-        if v["Version"] == "$LATEST":
-
-            print("skipping $LATEST")
-            continue
 
         msg = v["Description"] 
         msg = msg + "\n" + v["CodeSha256"] 
@@ -179,6 +190,8 @@ def sync(aws_lambda):
         
         if start:
             
+            started_sync = True
+
             fn = v["FunctionArn"]
             text,_ = get_function(fn)
 
@@ -187,11 +200,16 @@ def sync(aws_lambda):
 
             sha = res["content"]["sha"]
 
-        if len(commits) and commit_msg == msg:
+        if len(commits) and commit_msg == v["CodeSha256"]:
 
             print("found last commit")
             start = True
 
+    if len(vers) and not started_sync:
+        print("It seems nothing to sync.")
+
+    if len(vers) and not start:
+        print("Something is wrong. Last commit was not found.")
 
 
 

@@ -4,7 +4,7 @@ RUN apt-get update
 RUN apt-get install -y --fix-missing zip
 
 RUN pip2.7 install boto3
-RUN pip2.7 install requests
+RUN pip2.7 install --upgrade requests
 
 
 WORKDIR /lambda2git
