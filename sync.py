@@ -151,9 +151,21 @@ def sync(aws_lambda):
         print(sha)
     
     vs = l.list_versions_by_function(
-            FunctionName=aws_lambda)
+            FunctionName=aws_lambda)["Versions"]
 
-    for v in vs["Versions"]:
+    vers = vs[1:]
+    
+    if len(vers) and vs[0]["CodeSha256"] != vs[-1]["CodeSha256"]:  
+
+        print("$LATEST was not published.")
+        vers.append(vs[0])
+
+    if not len(vers):
+
+        print("Nothing was published.")
+        vers.append(vs[0])
+
+    for v in vers:
 
         if v["Version"] == "$LATEST":
 
