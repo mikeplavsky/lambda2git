@@ -146,30 +146,11 @@ def get_versions(vs):
 
     return vers
 
-def sync(aws_lambda):
-
-    la = l.get_function(
-            FunctionName=aws_lambda)
-
-    ext = get_ext(
-            la["Configuration"]["Runtime"])
-
-    name = aws_lambda + ext
-    print("Syncing " + name)
-
-    commits = get_commits(name).json()
-    print("Commits: %s" % len(commits))
+def get_init_state(f, commits):
 
     sha = None
     start = True
     commit_msg = None
-
-    f = None
-
-    try:
-        f = get_file(name).json()
-    except Exception as ex:
-        print(ex)
 
     if len(commits) and f: 
 
@@ -185,6 +166,31 @@ def sync(aws_lambda):
 
         print("sha in github")
         print(sha)
+
+    return sha, start, commit_msg
+
+def sync(aws_lambda):
+
+    la = l.get_function(
+            FunctionName=aws_lambda)
+
+    ext = get_ext(
+            la["Configuration"]["Runtime"])
+
+    name = aws_lambda + ext
+    print("Syncing " + name)
+
+    commits = get_commits(name).json()
+    print("Commits: %s" % len(commits))
+
+    f = None
+
+    try:
+        f = get_file(name).json()
+    except Exception as ex:
+        print(ex)
+
+    sha, start, commit_msg = get_init_state(f,commits)
     
     vs = l.list_versions_by_function(
             FunctionName=aws_lambda)["Versions"]

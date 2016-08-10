@@ -1,5 +1,36 @@
 from nose.tools import eq_
-from sync import get_ext, get_versions
+from sync import get_ext, get_versions, get_init_state
+
+def test_file_was_removed():
+
+    sha, start, commit_msg = get_init_state(
+            None, [1,2,3,4,5])
+
+    eq_(sha,None)
+    eq_(start,True)
+    eq_(commit_msg,None)
+    
+def test_commits_and_file():
+
+    sha, start, commit_msg = get_init_state(
+            dict(sha="abcd"),
+            [dict(
+                commit=dict(
+                    message="description\nCodeSha256")),
+                "5","77"])
+
+    eq_(sha,"abcd")
+    eq_(start,False)
+    eq_(commit_msg,"CodeSha256")
+
+def test_no_commits():
+
+    sha, start, commit_msg = get_init_state(
+            "file", [])
+
+    eq_(sha,None)
+    eq_(start,True)
+    eq_(commit_msg,None)
 
 def test_nothing_was_published():
     
